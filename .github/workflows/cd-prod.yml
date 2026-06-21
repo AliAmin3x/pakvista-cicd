@@ -1,0 +1,33 @@
+# CD Workflow – Production Environment
+# Trigger: Push to main branch (after PR merge)
+# Responsibility: Team Lead
+# Steps: Checkout → Declare environment: production → curl POST deploy hook → echo confirmation
+
+name: CD – Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  cd-production:
+    name: Deploy – Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      # Step 1 – Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2 – Environment is declared above at job level (environment: production)
+      # This injects RENDER_DEPLOY_HOOK_PROD_URL from the GitHub 'production' environment secrets
+
+      # Step 3 – Trigger Render deployment via deploy hook
+      - name: Deploy to Render (Production)
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_PROD_URL }}
+
+      # Step 4 – Output timestamped deployment confirmation
+      - name: Confirm Deployment
+        run: echo "Deployment to production environment triggered at $(date)"
