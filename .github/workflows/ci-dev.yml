@@ -27,19 +27,18 @@ jobs:
           node-version: "20"
 
       - name: Install Linting Tools
-        run: npm install -g htmlhint stylelint stylelint-config-standard
+        run: |
+          npm install -g htmlhint stylelint stylelint-config-standard
 
       - name: Lint HTML Files
         run: npx htmlhint "*.html" || true
 
       - name: Create Stylelint Config
-        run: echo '{"extends":["stylelint-config-standard"]}' > .stylelintrc.json
+        run: |
+          echo '{"extends":["stylelint-config-standard"]}' > .stylelintrc.json
 
       - name: Lint CSS File
         run: npx stylelint "*.css" || true
-
-      - name: Build with Parcel (static copy)
-        run: echo "Static site – no build step required"
 
       # Step 3 – Docker Login
       - name: Docker Login
