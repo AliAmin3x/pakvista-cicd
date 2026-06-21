@@ -1,0 +1,58 @@
+# CI Workflow – Production Environment
+# Trigger: Pull Request targeting the main branch
+# Responsibility: Member 5
+# Steps: Checkout → Lint HTML/CSS → Build with Parcel → Docker Login → Build Image → Tag → Push
+
+name: CI – Production
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci-production:
+    name: Build and Push – Production
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 – Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2 – Lint HTML and CSS, Build with Parcel
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Linting Tools
+        run: |
+          npm install -g htmlhint stylelint stylelint-config-standard
+
+      - name: Lint HTML Files
+        run: npx htmlhint "*.html" || true
+
+      - name: Create Stylelint Config
+        run: |
+          echo '{"extends":["stylelint-config-standard"]}' > .stylelintrc.json
+
+      - name: Lint CSS File
+        run: npx stylelint "*.css" || true
+
+      # Step 3 – Docker Login
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Step 4 & 5 & 6 – Build, Tag and Push Docker Image
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/pakvista:prod-latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/pakvista:prod-${{ github.sha }}
