@@ -1,0 +1,33 @@
+# CD Workflow – Development Environment
+# Trigger: Push to develop branch (after PR merge)
+# Responsibility: Member 2
+# Steps: Checkout → Declare environment: development → curl POST deploy hook → echo confirmation
+
+name: CD – Development
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  cd-development:
+    name: Deploy – Development
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      # Step 1 – Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2 – Environment is declared above at job level (environment: development)
+      # This injects RENDER_DEPLOY_HOOK_DEV_URL from the GitHub 'development' environment secrets
+
+      # Step 3 – Trigger Render deployment via deploy hook
+      - name: Deploy to Render (Development)
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_DEV_URL }}
+
+      # Step 4 – Output timestamped deployment confirmation
+      - name: Confirm Deployment
+        run: echo "Deployment to development environment triggered at $(date)"

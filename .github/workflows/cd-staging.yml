@@ -1,0 +1,33 @@
+# CD Workflow – Staging Environment
+# Trigger: Push to staging branch (after PR merge)
+# Responsibility: Member 4
+# Steps: Checkout → Declare environment: staging → curl POST deploy hook → echo confirmation
+
+name: CD – Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  cd-staging:
+    name: Deploy – Staging
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      # Step 1 – Checkout repository code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2 – Environment is declared above at job level (environment: staging)
+      # This injects RENDER_DEPLOY_HOOK_STAGING_URL from the GitHub 'staging' environment secrets
+
+      # Step 3 – Trigger Render deployment via deploy hook
+      - name: Deploy to Render (Staging)
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_STAGING_URL }}
+
+      # Step 4 – Output timestamped deployment confirmation
+      - name: Confirm Deployment
+        run: echo "Deployment to staging environment triggered at $(date)"
